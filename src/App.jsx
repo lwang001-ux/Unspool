@@ -5,7 +5,8 @@ const CMYK = { c: "#00C2FF", m: "#FF007F", y: "#FFEB00", k: "#111111" };
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
 
 /* ---------- layout constants ---------- */
-const GRID_COLS = "1fr minmax(0, 340px) minmax(0, 340px)";
+// Responsive grid - stacks on mobile via CSS
+const GRID_COLS = "repeat(auto-fit, minmax(min(100%, 320px), 1fr))";
 const GRID_GAP = 24;
 
 /* ---------- tags ---------- */
@@ -2242,9 +2243,12 @@ ${readme}
       <div style={{
         position: "relative",
         zIndex: 2,
-        width: "min(1560px, calc(100% - 80px))",
+        width: "min(1560px, calc(100% - 24px))",
         margin: "0 auto",
+        padding: "0 12px",
         boxSizing: "border-box",
+        maxWidth: "100vw",
+        overflowX: "hidden",
       }}>
         {/* Header */}
         <header style={{ padding: "22px 0 12px" }}>
@@ -2308,7 +2312,7 @@ ${readme}
                 <p style={{ fontSize: 15.5, lineHeight: 1.55, margin: "0 0 18px", maxWidth: 760, opacity: 0.9 }}>
                   A portfolio archive for maker educators, artists, designers, architects, and builders—made to outlive a platform.
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14, marginTop: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 14, marginTop: 12 }}>
                   <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.88)", borderRadius: 18, padding: 14, borderBottom: `3px solid ${CMYK.c}`, boxSizing: "border-box" }}>
                     <div style={{ fontWeight: 900, fontSize: 18.5, marginBottom: 8, letterSpacing: -0.25 }}>Time Capsule</div>
                     <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.92 }}>Everything, chronological. Searchable. Link-only or private.</div>
