@@ -17,46 +17,81 @@ body {
 }
 
 /* Mobile responsive styles */
-@media (max-width: 900px) {
-  /* Force single column layout on mobile */
-  #root > div > div {
-    width: calc(100% - 32px) !important;
-    padding: 16px !important;
+@media screen and (max-width: 768px) {
+  /* Force everything to be full width and not overflow */
+  * {
+    max-width: 100vw !important;
   }
 
-  /* Stack grid columns vertically */
-  header > div,
-  main {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
+  /* Main container */
+  #root > div > div {
+    width: 100% !important;
+    padding: 12px !important;
+    margin: 0 !important;
+  }
+
+  /* Force ALL grids to single column */
+  [style*="grid"] {
+    display: block !important;
+  }
+
+  /* Stack all flex containers */
+  [style*="display: flex"][style*="gap"] {
+    flex-wrap: wrap !important;
+  }
+
+  /* Header and main sections */
+  header, header > div, main, section {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* All child divs should be full width */
+  header > div > div,
+  main > section,
+  main > aside {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Navigation should wrap */
+  nav {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
   }
 
   /* Reduce font sizes */
   h1 {
-    font-size: 32px !important;
-    letter-spacing: -0.5px !important;
-  }
-
-  /* Stack the 3-column feature cards */
-  main section > div[style*="grid-template-columns: repeat(3"] {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 600px) {
-  #root > div > div {
-    width: calc(100% - 16px) !important;
-    padding: 8px !important;
-  }
-
-  h1 {
     font-size: 28px !important;
+    letter-spacing: -0.5px !important;
+    word-wrap: break-word !important;
   }
 
-  /* Hide middle/right columns on very small screens */
+  /* Cards and boxes */
+  [style*="borderRadius"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Hide the decorative empty divs */
+  main > div:empty {
+    display: none !important;
+  }
+
+  /* Aside columns - full width */
   aside {
     width: 100% !important;
+    max-width: 100% !important;
+    margin: 16px 0 !important;
+  }
+
+  /* Windows/panels */
+  [style*="minmax(0, 340px)"] {
+    width: 100% !important;
+    min-width: 0 !important;
     max-width: 100% !important;
   }
 }
