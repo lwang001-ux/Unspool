@@ -2329,70 +2329,38 @@ ${readme}
               {/* Platform Selection */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Choose your platform</div>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <div
-                    onClick={() => { clickSound(); setSelectedPlatform('twitter'); }}
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <SelectableKnob color={CMYK.c} selected={selectedPlatform === 'twitter' && !exportComplete} ariaLabel="Select Twitter" />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 13 }}>Twitter / X</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9, opacity: 0.6 }}>tweets.js</div>
-                    </div>
-                  </div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <ControlScreen title="Twitter" desc="tweets.js">
+                    <ActionKnob
+                      color={selectedPlatform === 'twitter' ? CMYK.c : "rgba(0,0,0,0.25)"}
+                      ariaLabel="Select Twitter"
+                      onClick={() => doClick(() => setSelectedPlatform('twitter'))}
+                    />
+                  </ControlScreen>
 
-                  <div
-                    onClick={() => { clickSound(); setSelectedPlatform('instagram'); }}
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <SelectableKnob color={CMYK.m} selected={selectedPlatform === 'instagram' && !exportComplete} ariaLabel="Select Instagram" />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 13 }}>Instagram</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9, opacity: 0.6 }}>posts_1.json</div>
-                    </div>
-                  </div>
+                  <ControlScreen title="Instagram" desc="posts_1.json">
+                    <ActionKnob
+                      color={selectedPlatform === 'instagram' ? CMYK.m : "rgba(0,0,0,0.25)"}
+                      ariaLabel="Select Instagram"
+                      onClick={() => doClick(() => setSelectedPlatform('instagram'))}
+                    />
+                  </ControlScreen>
 
-                  <div
-                    onClick={() => { clickSound(); setSelectedPlatform('facebook'); }}
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <SelectableKnob color={CMYK.y} selected={selectedPlatform === 'facebook' && !exportComplete} ariaLabel="Select Facebook" />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 13 }}>Facebook</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9, opacity: 0.6 }}>your_posts_1.json</div>
-                    </div>
-                  </div>
+                  <ControlScreen title="Facebook" desc="your_posts_1.json">
+                    <ActionKnob
+                      color={selectedPlatform === 'facebook' ? CMYK.y : "rgba(0,0,0,0.25)"}
+                      ariaLabel="Select Facebook"
+                      onClick={() => doClick(() => setSelectedPlatform('facebook'))}
+                    />
+                  </ControlScreen>
 
-                  <div
-                    onClick={() => { clickSound(); setSelectedPlatform('flickr'); }}
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <SelectableKnob color={CMYK.k} selected={selectedPlatform === 'flickr' && !exportComplete} ariaLabel="Select Flickr" />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 13 }}>Flickr</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9, opacity: 0.6 }}>photo_*.json</div>
-                    </div>
-                  </div>
+                  <ControlScreen title="Flickr" desc="photo_*.json">
+                    <ActionKnob
+                      color={selectedPlatform === 'flickr' ? CMYK.k : "rgba(0,0,0,0.25)"}
+                      ariaLabel="Select Flickr"
+                      onClick={() => doClick(() => setSelectedPlatform('flickr'))}
+                    />
+                  </ControlScreen>
                 </div>
               </div>
 
