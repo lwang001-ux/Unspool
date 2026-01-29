@@ -291,6 +291,79 @@ const INSPIRATION = [
   { kind: "quote", topic: "materials", text: "Every material has a grain. Respect it." },
   { kind: "quote", topic: "documentation", text: "If it isn't documented, it's a rumor." },
   { kind: "quote", topic: "documentation", text: "Future you will thank present you for good notes." },
+
+  // Scientists - Curiosity & Imagination
+  { kind: "quote", topic: "curiosity", text: "Imagination is more important than knowledge. Knowledge is limited. Imagination encircles the world.", author: "Albert Einstein" },
+  { kind: "quote", topic: "curiosity", text: "The important thing is not to stop questioning. Curiosity has its own reason for existing.", author: "Albert Einstein" },
+  { kind: "quote", topic: "creativity", text: "Logic will get you from A to B. Imagination will take you everywhere.", author: "Albert Einstein" },
+  { kind: "quote", topic: "curiosity", text: "I have no special talent. I am only passionately curious.", author: "Albert Einstein" },
+  { kind: "quote", topic: "creativity", text: "If I have seen further, it is by standing on the shoulders of giants.", author: "Isaac Newton" },
+  { kind: "quote", topic: "curiosity", text: "The first principle is that you must not fool yourself—and you are the easiest person to fool.", author: "Richard Feynman" },
+  { kind: "quote", topic: "curiosity", text: "I would rather have questions that can't be answered than answers that can't be questioned.", author: "Richard Feynman" },
+  { kind: "quote", topic: "creativity", text: "Study hard what interests you the most in the most undisciplined, irreverent and original manner possible.", author: "Richard Feynman" },
+  { kind: "quote", topic: "curiosity", text: "The pleasure of finding things out is the most remarkable feeling.", author: "Richard Feynman" },
+  { kind: "quote", topic: "curiosity", text: "Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less.", author: "Marie Curie" },
+  { kind: "quote", topic: "creativity", text: "Be less curious about people and more curious about ideas.", author: "Marie Curie" },
+  { kind: "quote", topic: "curiosity", text: "One never notices what has been done; one can only see what remains to be done.", author: "Marie Curie" },
+  { kind: "quote", topic: "curiosity", text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan" },
+  { kind: "quote", topic: "curiosity", text: "We are a way for the cosmos to know itself.", author: "Carl Sagan" },
+  { kind: "quote", topic: "curiosity", text: "The brain is like a muscle. When it is in use we feel very good. Understanding is joyous.", author: "Carl Sagan" },
+  { kind: "quote", topic: "creativity", text: "The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom.", author: "Isaac Asimov" },
+  { kind: "quote", topic: "curiosity", text: "The most exciting phrase in science is not 'Eureka!' but 'That's funny...'", author: "Isaac Asimov" },
+  { kind: "quote", topic: "curiosity", text: "Research is what I'm doing when I don't know what I'm doing.", author: "Wernher von Braun" },
+  { kind: "quote", topic: "curiosity", text: "Look up at the stars and not down at your feet. Be curious.", author: "Stephen Hawking" },
+  { kind: "quote", topic: "creativity", text: "Intelligence is the ability to adapt to change.", author: "Stephen Hawking" },
+
+  // Engineers & Inventors
+  { kind: "quote", topic: "creativity", text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas Edison" },
+  { kind: "quote", topic: "making", text: "Genius is one percent inspiration and ninety-nine percent perspiration.", author: "Thomas Edison" },
+  { kind: "quote", topic: "creativity", text: "To invent, you need a good imagination and a pile of junk.", author: "Thomas Edison" },
+  { kind: "quote", topic: "creativity", text: "The present is theirs; the future, for which I really worked, is mine.", author: "Nikola Tesla" },
+  { kind: "quote", topic: "curiosity", text: "The scientists of today think deeply instead of clearly. One must be sane to think clearly, but one can think deeply and be quite insane.", author: "Nikola Tesla" },
+  { kind: "quote", topic: "imagination", text: "My brain is only a receiver. In the Universe there is a core from which we obtain knowledge, strength, and inspiration.", author: "Nikola Tesla" },
+  { kind: "quote", topic: "creativity", text: "If you want to find the secrets of the universe, think in terms of energy, frequency and vibration.", author: "Nikola Tesla" },
+  { kind: "quote", topic: "creativity", text: "The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.", author: "Ada Lovelace" },
+  { kind: "quote", topic: "imagination", text: "Imagination is the discovering faculty, pre-eminently. It is that which penetrates into the unseen worlds around us, the worlds of science.", author: "Ada Lovelace" },
+  { kind: "quote", topic: "creativity", text: "We can only see a short distance ahead, but we can see plenty there that needs to be done.", author: "Alan Turing" },
+  { kind: "quote", topic: "curiosity", text: "Sometimes it is the people no one imagines anything of who do the things no one can imagine.", author: "Alan Turing" },
+  { kind: "quote", topic: "creativity", text: "A computer would deserve to be called intelligent if it could deceive a human into believing that it was human.", author: "Alan Turing" },
+  { kind: "quote", topic: "creativity", text: "Move fast and break things. Unless you are breaking stuff, you are not moving fast enough.", author: "Mark Zuckerberg" },
+  { kind: "quote", topic: "design", text: "Design is not just what it looks like and feels like. Design is how it works.", author: "Steve Jobs" },
+
+  // Mathematicians
+  { kind: "quote", topic: "creativity", text: "A mathematician is a device for turning coffee into theorems.", author: "Paul Erdős" },
+  { kind: "quote", topic: "curiosity", text: "Mathematics is not about numbers, equations, computations, or algorithms: it is about understanding.", author: "William Paul Thurston" },
+  { kind: "quote", topic: "creativity", text: "The essence of mathematics lies in its freedom.", author: "Georg Cantor" },
+  { kind: "quote", topic: "creativity", text: "Pure mathematics is, in its way, the poetry of logical ideas.", author: "Albert Einstein" },
+  { kind: "quote", topic: "curiosity", text: "Do not worry about your difficulties in mathematics. I can assure you mine are still greater.", author: "Albert Einstein" },
+  { kind: "quote", topic: "creativity", text: "The mathematician's patterns, like the painter's or the poet's, must be beautiful.", author: "G.H. Hardy" },
+  { kind: "quote", topic: "curiosity", text: "In mathematics you don't understand things. You just get used to them.", author: "John von Neumann" },
+  { kind: "quote", topic: "creativity", text: "Mathematics is the music of reason.", author: "James Joseph Sylvester" },
+  { kind: "quote", topic: "curiosity", text: "The only way to learn mathematics is to do mathematics.", author: "Paul Halmos" },
+  { kind: "quote", topic: "imagination", text: "Mathematics is the art of giving the same name to different things.", author: "Henri Poincaré" },
+  { kind: "quote", topic: "creativity", text: "It is not enough to have a good mind; the main thing is to use it well.", author: "René Descartes" },
+
+  // Renaissance & Polymaths
+  { kind: "quote", topic: "curiosity", text: "Learning never exhausts the mind.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "creativity", text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "curiosity", text: "The noblest pleasure is the joy of understanding.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "making", text: "I have been impressed with the urgency of doing. Knowing is not enough; we must apply.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "curiosity", text: "Study without desire spoils the memory, and it retains nothing that it takes in.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "imagination", text: "Iron rusts from disuse; water loses its purity from stagnation; even so does inaction sap the vigor of the mind.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "creativity", text: "Art is never finished, only abandoned.", author: "Leonardo da Vinci" },
+  { kind: "quote", topic: "creativity", text: "Where the spirit does not work with the hand, there is no art.", author: "Leonardo da Vinci" },
+
+  // More Scientists & Thinkers
+  { kind: "quote", topic: "curiosity", text: "The good thing about science is that it's true whether or not you believe in it.", author: "Neil deGrasse Tyson" },
+  { kind: "quote", topic: "curiosity", text: "For me, I am driven by two main philosophies: know more today about the world than I knew yesterday, and lessen the suffering of others.", author: "Neil deGrasse Tyson" },
+  { kind: "quote", topic: "creativity", text: "The most dangerous phrase in the language is: We've always done it this way.", author: "Grace Hopper" },
+  { kind: "quote", topic: "making", text: "A ship in port is safe, but that's not what ships are built for.", author: "Grace Hopper" },
+  { kind: "quote", topic: "creativity", text: "If it's a good idea, go ahead and do it. It's much easier to apologize than it is to get permission.", author: "Grace Hopper" },
+  { kind: "quote", topic: "curiosity", text: "The universe is under no obligation to make sense to you.", author: "Neil deGrasse Tyson" },
+  { kind: "quote", topic: "imagination", text: "Equipped with his five senses, man explores the universe around him and calls the adventure Science.", author: "Edwin Hubble" },
+  { kind: "quote", topic: "curiosity", text: "Wonder is the beginning of wisdom.", author: "Socrates" },
+  { kind: "quote", topic: "curiosity", text: "The unexamined life is not worth living.", author: "Socrates" },
+  { kind: "quote", topic: "creativity", text: "I know that I know nothing.", author: "Socrates" },
 ];
 
 const PROMPTS = [
@@ -2332,7 +2405,7 @@ ${readme}
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <ControlScreen title="Twitter" desc="tweets.js">
                     <ActionKnob
-                      color={selectedPlatform === 'twitter' ? CMYK.c : "rgba(0,0,0,0.25)"}
+                      color={CMYK.c}
                       ariaLabel="Select Twitter"
                       onClick={() => doClick(() => setSelectedPlatform('twitter'))}
                     />
@@ -2340,7 +2413,7 @@ ${readme}
 
                   <ControlScreen title="Instagram" desc="posts_1.json">
                     <ActionKnob
-                      color={selectedPlatform === 'instagram' ? CMYK.m : "rgba(0,0,0,0.25)"}
+                      color={CMYK.m}
                       ariaLabel="Select Instagram"
                       onClick={() => doClick(() => setSelectedPlatform('instagram'))}
                     />
@@ -2348,7 +2421,7 @@ ${readme}
 
                   <ControlScreen title="Facebook" desc="your_posts_1.json">
                     <ActionKnob
-                      color={selectedPlatform === 'facebook' ? CMYK.y : "rgba(0,0,0,0.25)"}
+                      color={CMYK.y}
                       ariaLabel="Select Facebook"
                       onClick={() => doClick(() => setSelectedPlatform('facebook'))}
                     />
@@ -2356,7 +2429,7 @@ ${readme}
 
                   <ControlScreen title="Flickr" desc="photo_*.json">
                     <ActionKnob
-                      color={selectedPlatform === 'flickr' ? CMYK.k : "rgba(0,0,0,0.25)"}
+                      color={CMYK.k}
                       ariaLabel="Select Flickr"
                       onClick={() => doClick(() => setSelectedPlatform('flickr'))}
                     />
@@ -2606,7 +2679,7 @@ ${readme}
             <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box", marginTop: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 2px 12px", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 14, gap: 12 }}>
                 <div style={{ fontWeight: 900, fontSize: 15.5, letterSpacing: -0.2 }}>Tweet Generator</div>
-                <div style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: 0.2, opacity: 0.65 }}>daily inspiration + prompts</div>
+                <div style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: 0.2, opacity: 0.65 }}>fresh quote daily</div>
               </div>
               
               <div style={{ display: "flex", gap: 18, alignItems: "flex-start", overflowX: "auto", paddingBottom: 2 }}>
