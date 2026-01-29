@@ -1,0 +1,1070 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+
+/* ---------- palette ---------- */
+const CMYK = { c: "#00C2FF", m: "#FF007F", y: "#FFEB00", k: "#111111" };
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+
+/* ---------- layout constants ---------- */
+const GRID_COLS = "0.95fr 1.10fr 1.10fr";
+const GRID_GAP = 44;
+
+/* ---------- tags ---------- */
+const TAGS = [
+  { id: "process", label: "process", top: CMYK.c },
+  { id: "systems", label: "systems", top: CMYK.m },
+  { id: "materials", label: "materials", top: CMYK.y },
+  { id: "documentation", label: "documentation", top: CMYK.k },
+  { id: "assessment", label: "assessment", top: CMYK.k },
+  { id: "makerspace", label: "makerspace", top: CMYK.y },
+  { id: "design", label: "design", top: CMYK.c },
+  { id: "sustainability", label: "sustainability", top: CMYK.c },
+];
+
+/* ---------- RNG functions ---------- */
+function dayKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${da}`;
+}
+
+function hash32(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed) {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleWithRng(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickWithRng(arr, rng) {
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function formatDate(d) {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[d.getMonth()]} ${pad2(d.getDate())}, ${d.getFullYear()}`;
+}
+
+/* ---------- content ---------- */
+const INSPIRATION = [
+  { kind: "quote", topic: "design", text: "Design is the edit." },
+  { kind: "quote", topic: "design", text: "Clarity beats decoration—every time." },
+  { kind: "quote", topic: "engineering", text: "Make the simplest version that survives real use." },
+  { kind: "quote", topic: "architecture", text: "Spaces teach—whether we mean them to or not." },
+  { kind: "quote", topic: "sustainability", text: "Design for repair first. Recycling is Plan B." },
+  { kind: "quote", topic: "science", text: "Measure what matters, then redesign what doesn't." },
+  { kind: "quote", topic: "education", text: "The best learning leaves evidence you can hold." },
+  { kind: "quote", topic: "systems", text: "Zoom out until the causes connect." },
+  { kind: "quote", topic: "materials", text: "Choose fewer materials. Learn them deeply." },
+  { kind: "quote", topic: "documentation", text: "If it isn't documented, it's a rumor." },
+];
+
+const PROMPTS = [
+  { kind: "prompt", topic: "making", text: "Design a tool that removes one step from a daily routine—prototype it in paper." },
+  { kind: "prompt", topic: "making", text: "Take one object. Remove 30% of its parts. What still works?" },
+  { kind: "prompt", topic: "education", text: "How would you show learning with 3 photos and 30 words?" },
+  { kind: "prompt", topic: "sustainability", text: "Pick a product you love. Redesign it to be repairable in under 5 minutes." },
+  { kind: "prompt", topic: "systems", text: "Draw a loop: what increases demand, and what increases capacity?" },
+  { kind: "prompt", topic: "architecture", text: "Sketch a quiet corner in a school. What materials make it calmer?" },
+  { kind: "prompt", topic: "design", text: "Write a one-sentence design principle you'll follow this week." },
+  { kind: "prompt", topic: "science", text: "What's one variable you could control to make your project more reliable?" },
+];
+
+/* ---------- Real Twitter Archive Data ---------- */
+const REAL_ARCHIVE = [
+  { id: "1711116983561834571", created_at: "Sun Oct 08 20:30:54 +0000 2023", full_text: "After a weekend of learning, sharing and presenting at #flc2023 so nice to go for a ride across the Hudson!", hashtags: ["flc2023"], media: [{ type: "photo", url: "https://pbs.twimg.com/ext_tw_video_thumb/1711114276927139840/pu/img/PpNj2jKIeuN-jb2T.jpg" }] },
+  { id: "1680195314928570373", created_at: "Sat Jul 15 12:39:14 +0000 2023", full_text: "Had so much fun learning with project mates Andrew, Tazz, Amanda and Kurt! #cmk23 #realdealpbl #learningbydoing #hardfun", hashtags: ["cmk23", "realdealpbl", "learningbydoing", "hardfun"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/F1FAu76XgAA4Z7j.jpg" }] },
+  { id: "1680191218519625729", created_at: "Sat Jul 15 12:22:57 +0000 2023", full_text: "So much gratitude to amazing teachers for an incredible experience at #cmk23 #realdealpbl #learningbydoing #inventtolearn", hashtags: ["cmk23", "realdealpbl", "learningbydoing", "inventtolearn"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/F1E8g5TXoAEjDtx.jpg" }] },
+  { id: "1679686893066223616", created_at: "Fri Jul 14 02:58:57 +0000 2023", full_text: "Charle Rosen of the 8 Bit Big Band! #cmk23", hashtags: ["cmk23"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/F09yUs_WYAEZlzO.jpg" }] },
+  { id: "1679684382305517569", created_at: "Fri Jul 14 02:48:58 +0000 2023", full_text: "CEO demonstrating new machine learning capabilities of the #bbcmicrobit #cmk23", hashtags: ["bbcmicrobit", "cmk23"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/F09wCtXXoAEPBhK.jpg" }] },
+  { id: "1679218946782687232", created_at: "Wed Jul 12 19:59:29 +0000 2023", full_text: "So much fun at #CMK23 #realdealpbl", hashtags: ["CMK23", "realdealpbl"], media: [{ type: "photo", url: "https://pbs.twimg.com/ext_tw_video_thumb/1679218895721316353/pu/img/dxjgZhq4Xh6OWi4V.jpg" }] },
+  { id: "1667601684514721795", created_at: "Sat Jun 10 18:36:38 +0000 2023", full_text: "9th grade lighting designs made with love in the spark lab. #mypdesign", hashtags: ["mypdesign"], media: [{ type: "photo", url: "https://pbs.twimg.com/ext_tw_video_thumb/1667601551974703104/pu/img/RK-NneuI1vUFwb-R.jpg" }] },
+  { id: "1633645913074806784", created_at: "Thu Mar 09 01:48:32 +0000 2023", full_text: "Looking forward to welcoming amazing teachers to our schools. Registration is now open for these workshops! #makered", hashtags: ["makered"], media: [] },
+  { id: "1130834557551480832", created_at: "Tue May 21 13:55:43 +0000 2019", full_text: "We made this Central Park bird list for our first graders! Can't wait to bring them to the park this afternoon! #girlswhobird #mmtsteam #changeperspective", hashtags: ["girlswhobird", "mmtsteam", "changeperspective"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D7GICMUX4AAtipu.jpg" }] },
+  { id: "1129715076594843648", created_at: "Sat May 18 11:47:18 +0000 2019", full_text: "So much fun planning a birding trip to Central Park with our 1st graders. One way to bring the outside-in. We were watching a yellow throated vireo build its nest. #girlswhobird #mmtsteam #changeperspective", hashtags: ["girlswhobird", "mmtsteam", "changeperspective"], media: [] },
+  { id: "1129568273174077440", created_at: "Sat May 18 02:03:57 +0000 2019", full_text: "First graders drawing the bird species they are becoming experts on. We loved hearing Noor mention that everyone in her family is learning about her bird, the northern flicker. #mmtsteam #girlswhobird #changeperspective", hashtags: ["mmtsteam", "girlswhobird", "changeperspective"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D60IUZ6WsAEDeiy.jpg" }] },
+  { id: "1117570365209890816", created_at: "Sun Apr 14 23:28:33 +0000 2019", full_text: "The Lower Middle School #ROarBOTS at #RoboExpo #mmtmakers", hashtags: ["ROarBOTS", "RoboExpo", "mmtmakers"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D4JoUogW4AE33Qr.jpg" }] },
+  { id: "1116077448255422464", created_at: "Wed Apr 10 20:36:14 +0000 2019", full_text: "Cassidy's latest iteration made with felt", hashtags: [], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D30ahZNWsAAaQ3M.jpg" }] },
+  { id: "1116074158285307906", created_at: "Wed Apr 10 20:23:09 +0000 2019", full_text: "Introducing the #mmtROarBOTS #mmtmakers", hashtags: ["mmtROarBOTS", "mmtmakers"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D30Xh4bX4AEJGW2.jpg" }] },
+  { id: "1116064706253471745", created_at: "Wed Apr 10 19:45:36 +0000 2019", full_text: "Lower Middle School ROarBOTS making custom t-shirts for #roboexpo", hashtags: ["roboexpo"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D30O7wEW0AA9wbz.jpg" }] },
+  { id: "1115993897598111745", created_at: "Wed Apr 10 15:04:14 +0000 2019", full_text: "Ava and Mia, Class IV, designed Mr. Microbit", hashtags: [], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D3zOhlqXsAECeYB.jpg" }] },
+  { id: "1115993623466782720", created_at: "Wed Apr 10 15:03:08 +0000 2019", full_text: "Cassidy and Hunter, Class IV, designed a fitness tracker! #microbit #mmtsteam", hashtags: ["microbit", "mmtsteam"], media: [{ type: "photo", url: "https://pbs.twimg.com/ext_tw_video_thumb/1115993566315253760/pu/img/stZy6Fb3F3x-U0ek.jpg" }] },
+  { id: "1106739358944714752", created_at: "Sat Mar 16 02:10:00 +0000 2019", full_text: "Parker's first time with the micro:bit #mmtsteam #girlswholovetocode", hashtags: ["mmtsteam", "girlswholovetocode"], media: [{ type: "photo", url: "https://pbs.twimg.com/ext_tw_video_thumb/1106738803358814208/pu/img/k2YB8Ga_i3rpY2EV.jpg" }] },
+  { id: "1106596105876328448", created_at: "Fri Mar 15 16:40:45 +0000 2019", full_text: "Class IV coding with the micro:bit #mmtsteam #girlwholovetocode", hashtags: ["mmtsteam", "girlwholovetocode"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D1trSgUWkAAXLq8.jpg" }] },
+  { id: "1106537500758151170", created_at: "Fri Mar 15 12:47:53 +0000 2019", full_text: "Amazed by the Class IV vending machines #mmtsteam #howcomputersthink", hashtags: ["mmtsteam", "howcomputersthink"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D1s1_V7W0AIK8CI.jpg" }] },
+  { id: "1106536657371709445", created_at: "Fri Mar 15 12:44:32 +0000 2019", full_text: "A happy customer at our Class IV vending machine showcase! #mmtsteam #howcomputersthink", hashtags: ["mmtsteam", "howcomputersthink"], media: [{ type: "photo", url: "https://pbs.twimg.com/media/D1s0rblWoAAs8Kv.jpg" }] },
+];
+
+function makeDailyTweet(seedStr, index = 0) {
+  const seed = hash32(`${seedStr}::${index}`);
+  const rng = mulberry32(seed);
+  const pool = shuffleWithRng([...INSPIRATION, ...PROMPTS], rng);
+  const item = pool[0] || pickWithRng(INSPIRATION, rng);
+  const t1 = pickWithRng(TAGS, rng);
+  let t2 = pickWithRng(TAGS, rng);
+  for (let i = 0; i < 12 && t2.id === t1.id; i++) t2 = pickWithRng(TAGS, rng);
+  return {
+    id: `d_${seedStr}_${index}`,
+    date: new Date(),
+    text: item.text,
+    kind: item.kind,
+    topic: item.topic,
+    tags: [t1, t2],
+  };
+}
+
+/* ---------- sound hook ---------- */
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function useKeyboardClickSound(enabled) {
+  const ctxRef = useRef(null);
+  
+  function play() {
+    if (!enabled) return;
+    try {
+      if (!ctxRef.current) ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = ctxRef.current;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      const f = ctx.createBiquadFilter();
+      o.type = "square";
+      o.frequency.value = randInt(1800, 2600);
+      f.type = "bandpass";
+      f.frequency.value = 2200;
+      f.Q.value = 10;
+      g.gain.value = 0.0001;
+      o.connect(f);
+      f.connect(g);
+      g.connect(ctx.destination);
+      const now = ctx.currentTime;
+      const dur = 0.03;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.06, now + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.start(now);
+      o.stop(now + dur);
+    } catch {}
+  }
+  
+  useEffect(() => {
+    const resume = async () => {
+      try {
+        if (ctxRef.current && ctxRef.current.state === "suspended") await ctxRef.current.resume();
+      } catch {}
+    };
+    window.addEventListener("pointerdown", resume, { passive: true });
+    return () => window.removeEventListener("pointerdown", resume);
+  }, []);
+  
+  return play;
+}
+
+/* ---------- UI Components ---------- */
+function PageNavButton({ label, sliverColor, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        appearance: "none",
+        border: "1px solid rgba(0,0,0,0.16)",
+        background: "rgba(255,255,255,0.92)",
+        color: "#111111",
+        padding: "10px 16px",
+        borderRadius: 12,
+        fontSize: 13,
+        fontWeight: 850,
+        cursor: "pointer",
+        outline: "none",
+        userSelect: "none",
+        minWidth: 86,
+        borderTopWidth: 2,
+        borderTopStyle: "solid",
+        borderTopColor: sliverColor,
+        position: "relative",
+        boxSizing: "border-box",
+      }}
+    >
+      {label}
+      {active && (
+        <span style={{
+          position: "absolute",
+          left: 12,
+          right: 12,
+          top: "calc(100% + 7px)",
+          height: 3,
+          backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.95) 1.2px, transparent 1.8px)",
+          backgroundSize: "10px 3px",
+          backgroundRepeat: "repeat-x",
+          pointerEvents: "none",
+        }} />
+      )}
+    </button>
+  );
+}
+
+function TagPill({ label, topColor }) {
+  return (
+    <span style={{
+      fontSize: 10,
+      padding: "4px 7px",
+      borderRadius: 10,
+      border: "1px solid rgba(0,0,0,0.10)",
+      background: "rgba(255,255,255,0.98)",
+      borderBottomWidth: 2,
+      borderBottomStyle: "solid",
+      borderBottomColor: topColor,
+      boxSizing: "border-box",
+    }}>
+      {label}
+    </span>
+  );
+}
+
+function ControlScreen({ title, desc, children }) {
+  return (
+    <div style={{
+      borderRadius: 10,
+      border: "1px solid rgba(0,0,0,0.16)",
+      background: "rgba(245,246,248,0.92)",
+      padding: "6px 7px",
+      minWidth: 128,
+      maxWidth: 128,
+      height: 66,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      flex: "0 0 auto",
+      boxSizing: "border-box",
+    }}>
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ fontSize: 10.4, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9 }}>{title}</div>
+        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 2, lineHeight: 1.12 }}>{desc}</div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", paddingBottom: 4 }}>{children}</div>
+    </div>
+  );
+}
+
+function Knob({ color, on, onToggle, ariaLabel }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={on}
+      aria-label={ariaLabel}
+      style={{
+        border: "none",
+        background: "transparent",
+        padding: 0,
+        margin: 0,
+        cursor: "pointer",
+        textAlign: "left",
+        userSelect: "none",
+      }}
+    >
+      <div style={{ display: "inline-flex" }}>
+        <div style={{
+          width: 26,
+          height: 26,
+          borderRadius: 999,
+          border: `3px solid ${color}`,
+          background: "rgba(255,255,255,0.98)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform 140ms ease",
+          position: "relative",
+          boxSizing: "border-box",
+          transform: `rotate(${on ? 135 : 45}deg)`,
+        }}>
+          <div style={{ width: 16, height: 16, borderRadius: 999, background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+          <div style={{ position: "absolute", top: 3, left: "50%", width: 2, height: 8, borderRadius: 99, background: "rgba(0,0,0,0.82)", transform: "translateX(-50%)" }} />
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function ActionKnob({ color, onClick, ariaLabel }) {
+  const [pressed, setPressed] = useState(false);
+  
+  function handleClick() {
+    onClick?.();
+    setPressed(true);
+    setTimeout(() => setPressed(false), 600);
+  }
+  
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={ariaLabel}
+      style={{
+        border: "none",
+        background: "transparent",
+        padding: 0,
+        margin: 0,
+        cursor: "pointer",
+        textAlign: "left",
+        userSelect: "none",
+      }}
+    >
+      <div style={{ display: "inline-flex" }}>
+        <div style={{
+          width: 26,
+          height: 26,
+          borderRadius: 999,
+          border: `3px solid ${color}`,
+          background: "rgba(255,255,255,0.98)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          boxSizing: "border-box",
+          transform: `rotate(${pressed ? 90 : 0}deg)`,
+          transition: "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+        }}>
+          <div style={{ width: 16, height: 16, borderRadius: 999, background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+          <div style={{ position: "absolute", top: 3, left: "50%", width: 2, height: 8, borderRadius: 99, background: "rgba(0,0,0,0.82)", transform: "translateX(-50%)" }} />
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ---------- Main App ---------- */
+export default function App() {
+  const [activeTopTab, setActiveTopTab] = useState("home");
+  const [soundOn, setSoundOn] = useState(true);
+  const [autoOn, setAutoOn] = useState(true);
+  const [searchOn, setSearchOn] = useState(false);
+  const [sortNewest, setSortNewest] = useState(true);
+  const [query, setQuery] = useState("");
+  const [archiveStatus, setArchiveStatus] = useState("");
+  
+  const clickSound = useKeyboardClickSound(soundOn);
+  
+  const today = dayKey(new Date());
+  const [tweets, setTweets] = useState(() => [0, 1, 2, 3, 4, 5].map((i) => makeDailyTweet(today, i)));
+  const [archivedTweets, setArchivedTweets] = useState([]); // Empty until Demo loads real Twitter archive
+  const [mediaItems, setMediaItems] = useState([]);
+  
+  // auto drip
+  useEffect(() => {
+    if (!autoOn) return;
+    const seed = hash32(today);
+    const rng = mulberry32(seed);
+    const order = shuffleWithRng([...INSPIRATION, ...PROMPTS], rng);
+    let idx = 0;
+    
+    const t = setInterval(() => {
+      setTweets((prev) => {
+        idx += 1;
+        const item = order[idx % order.length] || { kind: "quote", topic: "design", text: "Design is the edit." };
+        const t1 = pickWithRng(TAGS, rng);
+        let t2 = pickWithRng(TAGS, rng);
+        for (let i = 0; i < 12 && t2.id === t1.id; i++) t2 = pickWithRng(TAGS, rng);
+        const tw = {
+          id: `a_${today}_${idx}`,
+          date: new Date(),
+          text: item.text,
+          kind: item.kind,
+          topic: item.topic,
+          tags: [t1, t2],
+        };
+        return [tw, ...prev].slice(0, 24);
+      });
+    }, 15000);
+    
+    return () => clearInterval(t);
+  }, [autoOn, today]);
+  
+  const filteredTweets = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = [...tweets];
+    if (searchOn && q) {
+      list = list.filter((tw) => {
+        const tagText = tw.tags.map((x) => x.label).join(" ").toLowerCase();
+        const meta = `${tw.kind} ${tw.topic}`.toLowerCase();
+        return tw.text.toLowerCase().includes(q) || tagText.includes(q) || meta.includes(q);
+      });
+    }
+    list.sort((a, b) => (sortNewest ? b.date.getTime() - a.date.getTime() : a.date.getTime() - b.date.getTime()));
+    return list;
+  }, [tweets, query, searchOn, sortNewest]);
+  
+  function doClick(fn) {
+    clickSound();
+    fn?.();
+  }
+  
+  function loadDemoData() {
+    console.log('Loading random batch from your archive...');
+    const tagById = new Map(TAGS.map((t) => [t.id, t]));
+    const fallbackTag = TAGS[0];
+    
+    // Shuffle the archive and take a random selection
+    const shuffled = [...REAL_ARCHIVE].sort(() => Math.random() - 0.5);
+    const selectedTweets = shuffled.slice(0, 12); // Get 12 random tweets
+    
+    const parsedTweets = [];
+    const parsedMedia = [];
+    
+    selectedTweets.forEach((tweet) => {
+      // Map hashtags to our tag system
+      let tags = [];
+      for (const hashtag of tweet.hashtags) {
+        const h = hashtag.toLowerCase();
+        if (h.includes('make') || h.includes('build') || h.includes('create') || h.includes('pbl') || h.includes('bot')) {
+          tags.push(tagById.get('makerspace') || fallbackTag);
+        } else if (h.includes('design') || h.includes('my')) {
+          tags.push(tagById.get('design') || fallbackTag);
+        } else if (h.includes('learning') || h.includes('education') || h.includes('mmt') || h.includes('hard')) {
+          tags.push(tagById.get('process') || fallbackTag);
+        } else if (h.includes('system')) {
+          tags.push(tagById.get('systems') || fallbackTag);
+        } else if (h.includes('material')) {
+          tags.push(tagById.get('materials') || fallbackTag);
+        } else if (h.includes('cmk') || h.includes('flc') || h.includes('robo') || h.includes('expo')) {
+          tags.push(tagById.get('process') || fallbackTag);
+        } else if (h.includes('bird') || h.includes('change') || h.includes('perspective')) {
+          tags.push(tagById.get('sustainability') || fallbackTag);
+        } else if (h.includes('micro') || h.includes('code') || h.includes('computer')) {
+          tags.push(tagById.get('systems') || fallbackTag);
+        }
+      }
+      
+      // Remove duplicates
+      tags = [...new Map(tags.map(t => [t.id, t])).values()];
+      
+      // Ensure we have at least 2 tags
+      if (tags.length === 0) {
+        tags.push(tagById.get('process') || fallbackTag);
+      }
+      if (tags.length === 1) {
+        tags.push(tagById.get('documentation') || fallbackTag);
+      }
+      
+      // Only take first 2 tags
+      tags = tags.slice(0, 2);
+      
+      parsedTweets.push({
+        id: tweet.id,
+        date: new Date(tweet.created_at),
+        text: tweet.full_text,
+        kind: "tweet",
+        topic: "archive",
+        tags,
+      });
+      
+      // Extract media if present
+      if (tweet.media && tweet.media.length > 0) {
+        tweet.media.forEach(media => {
+          parsedMedia.push({
+            id: `${tweet.id}_${parsedMedia.length}`,
+            kind: media.type === 'photo' ? 'image' : media.type,
+            title: tweet.full_text.substring(0, 40) + '...',
+            date: new Date(tweet.created_at),
+            url: media.url,
+          });
+        });
+      }
+    });
+    
+    console.log('Loaded random batch:', parsedTweets.length, 'tweets');
+    console.log('Loaded media:', parsedMedia.length);
+    
+    setArchivedTweets(parsedTweets);
+    setMediaItems(parsedMedia);
+    setArchiveStatus(`Loaded ${parsedTweets.length} random tweets, ${parsedMedia.length} media ✓`);
+  }
+  
+  async function downloadPortfolio() {
+    try {
+      setArchiveStatus("Preparing download…");
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        version: "unspool-json-v1",
+        tweets: (tweets || []).map((t) => ({
+          id: t.id,
+          date: t.date instanceof Date ? t.date.toISOString() : String(t.date),
+          text: t.text,
+          kind: t.kind,
+          topic: t.topic,
+          tags: (t.tags || []).map((x) => x.label),
+        })),
+      };
+      const stamp = new Date().toISOString().slice(0, 10);
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `unspool-portfolio-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 800);
+      setArchiveStatus("Downloaded ✓ (JSON)");
+    } catch (e) {
+      console.error("[unspool] downloadPortfolio failed", e);
+      setArchiveStatus("Download failed");
+    }
+  }
+  
+  const GRID = { small: 24, big: 120, line: "rgba(91,140,255,0.18)", bigLine: "rgba(91,140,255,0.26)" };
+  
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#FFFFFF",
+      position: "relative",
+      overflowX: "hidden",
+      fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
+      color: "#111111",
+    }}>
+      {/* Grid overlay */}
+      <div style={{
+        position: "fixed",
+        inset: 0,
+        pointerEvents: "none",
+        zIndex: 0,
+        backgroundImage: `
+          linear-gradient(to right, ${GRID.line} 1px, transparent 1px),
+          linear-gradient(to bottom, ${GRID.line} 1px, transparent 1px),
+          linear-gradient(to right, ${GRID.bigLine} 1px, transparent 1px),
+          linear-gradient(to bottom, ${GRID.bigLine} 1px, transparent 1px)
+        `,
+        backgroundSize: `
+          ${GRID.small}px ${GRID.small}px,
+          ${GRID.small}px ${GRID.small}px,
+          ${GRID.big}px ${GRID.big}px,
+          ${GRID.big}px ${GRID.big}px
+        `,
+      }} />
+      
+      <div style={{
+        position: "relative",
+        zIndex: 2,
+        width: "min(1560px, calc(100% - 80px))",
+        margin: "0 auto",
+        boxSizing: "border-box",
+      }}>
+        {/* Header */}
+        <header style={{ padding: "22px 0 12px" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: GRID_COLS,
+            gap: GRID_GAP,
+            alignItems: "start",
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
+                <div style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.1, lineHeight: 0.92 }}>unspool</div>
+                <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginBottom: 2 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: CMYK.c }} />
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: CMYK.m }} />
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: CMYK.y }} />
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: CMYK.k }} />
+                </div>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 14.5, opacity: 0.75 }}>Turn your Twitter archive into a viewable portfolio.</div>
+            </div>
+            
+            <div />
+            
+            <div style={{
+              border: "1px solid transparent",
+              borderRadius: 22,
+                padding: 16,
+              boxSizing: "border-box",
+            }}>
+              <nav style={{
+                display: "flex",
+                width: "100%",
+                justifyContent: "flex-end",
+                paddingRight: 34,
+                
+                alignItems: "center",
+                gap: 10,
+                padding: 0,
+                boxSizing: "border-box",
+              }}>
+                <PageNavButton label="Home" sliverColor={CMYK.c} active={activeTopTab === "home"} onClick={() => doClick(() => setActiveTopTab("home"))} />
+                <PageNavButton label="About" sliverColor={CMYK.m} active={activeTopTab === "about"} onClick={() => doClick(() => setActiveTopTab("about"))} />
+                <PageNavButton label="How to" sliverColor={CMYK.y} active={activeTopTab === "howto"} onClick={() => doClick(() => setActiveTopTab("howto"))} />
+              </nav>
+            </div>
+          </div>
+        </header>
+        
+        {/* Main */}
+        <main style={{
+          width: "100%",
+          padding: "18px 0 28px",
+          display: "grid",
+          gridTemplateColumns: GRID_COLS,
+          gap: GRID_GAP,
+          alignItems: "start",
+        }}>
+          {/* Left column */}
+          <section style={{ width: "100%" }}>
+            {activeTopTab === "home" && (
+              <>
+                <h1 style={{ fontSize: 52, lineHeight: 0.98, letterSpacing: -1.6, margin: "18px 0 14px", fontWeight: 950 }}>
+                  Unspool your work.<br />Keep the receipts.<br />Lose the feed.
+                </h1>
+                <p style={{ fontSize: 15.5, lineHeight: 1.55, margin: "0 0 18px", maxWidth: 760, opacity: 0.9 }}>
+                  A portfolio archive for maker educators, artists, designers, architects, and builders—made to outlive a platform.
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14, marginTop: 12 }}>
+                  <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.88)", borderRadius: 18, padding: 14, borderBottom: `3px solid ${CMYK.c}`, boxSizing: "border-box" }}>
+                    <div style={{ fontWeight: 900, fontSize: 18.5, marginBottom: 8, letterSpacing: -0.25 }}>Time Capsule</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.92 }}>Everything, chronological. Searchable. Link-only or private.</div>
+                  </div>
+                  <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.88)", borderRadius: 18, padding: 14, borderBottom: `3px solid ${CMYK.m}`, boxSizing: "border-box" }}>
+                    <div style={{ fontWeight: 900, fontSize: 18.5, marginBottom: 8, letterSpacing: -0.25 }}>Portfolio</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.92 }}>Curate highlights: threads, projects, media sets, notes.</div>
+                  </div>
+                  <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.88)", borderRadius: 18, padding: 14, borderBottom: `3px solid ${CMYK.y}`, boxSizing: "border-box" }}>
+                    <div style={{ fontWeight: 900, fontSize: 18.5, marginBottom: 8, letterSpacing: -0.25 }}>Educator-friendly</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.92 }}>Privacy-aware. Self-hostable. Built for sharing without risk.</div>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {activeTopTab === "about" && (
+              <div style={{ marginTop: 16, border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box" }}>
+                <h1 style={{ fontSize: 32, margin: "0 0 10px", letterSpacing: -0.8, fontWeight: 950 }}>About</h1>
+                <p style={{ fontSize: 15.5, lineHeight: 1.55, margin: "0 0 18px", maxWidth: 760, opacity: 0.9 }}>
+                  Unspool is for people who used Twitter like a studio wall: maker educators, artists, designers, architects, and builders.
+                </p>
+              </div>
+            )}
+            
+            {activeTopTab === "howto" && (
+              <div style={{ marginTop: 16, border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box" }}>
+                <h1 style={{ fontSize: 32, margin: "0 0 10px", letterSpacing: -0.8, fontWeight: 950 }}>How to</h1>
+                <p style={{ fontSize: 15.5, lineHeight: 1.55, margin: "0 0 18px", maxWidth: 760, opacity: 0.9 }}>
+                  Step 1: export your archive. Step 2: import into Unspool. Step 3: browse it like a portfolio.
+                </p>
+              </div>
+            )}
+            
+            {/* Tweet Generator */}
+            <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box", marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 2px 12px", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 14, gap: 12 }}>
+                <div style={{ fontWeight: 900, fontSize: 15.5, letterSpacing: -0.2 }}>Tweet Generator</div>
+                <div style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: 0.2, opacity: 0.65 }}>daily inspiration + prompts</div>
+              </div>
+              
+              <div style={{ display: "flex", gap: 18, alignItems: "flex-start", overflowX: "auto", paddingBottom: 2 }}>
+                <ControlScreen title="Generate" desc="Add one now">
+                  <ActionKnob color={CMYK.c} ariaLabel="Generate tweet" onClick={() => doClick(() => {
+                    const seed = hash32(`${today}::manual::${Date.now()}`);
+                    const rng = mulberry32(seed);
+                    const item = pickWithRng([...INSPIRATION, ...PROMPTS], rng);
+                    const t1 = pickWithRng(TAGS, rng);
+                    let t2 = pickWithRng(TAGS, rng);
+                    for (let i = 0; i < 12 && t2.id === t1.id; i++) t2 = pickWithRng(TAGS, rng);
+                    const tw = {
+                      id: `m_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                      date: new Date(),
+                      text: item.text,
+                      kind: item.kind,
+                      topic: item.topic,
+                      tags: [t1, t2],
+                    };
+                    setTweets((prev) => [tw, ...prev].slice(0, 24));
+                  })} />
+                </ControlScreen>
+                
+                <ControlScreen title="Auto" desc={autoOn ? "Drip on" : "Stopped"}>
+                  <Knob color={CMYK.m} on={autoOn} onToggle={() => doClick(() => setAutoOn((v) => !v))} ariaLabel="Toggle auto-drip" />
+                </ControlScreen>
+                
+                <ControlScreen title="Search" desc={searchOn ? "Active" : "Off"}>
+                  <Knob color={CMYK.y} on={searchOn} onToggle={() => doClick(() => setSearchOn((s) => !s))} ariaLabel="Toggle search" />
+                </ControlScreen>
+                
+                <ControlScreen title="Order" desc={sortNewest ? "Newest first" : "Oldest first"}>
+                  <Knob color={CMYK.k} on={sortNewest} onToggle={() => doClick(() => setSortNewest((v) => !v))} ariaLabel="Toggle order" />
+                </ControlScreen>
+                
+                <ControlScreen title="Sound" desc={soundOn ? "Clicks on" : "Silent"}>
+                  <Knob color={CMYK.c} on={soundOn} onToggle={() => doClick(() => setSoundOn((s) => !s))} ariaLabel="Toggle sound" />
+                </ControlScreen>
+              </div>
+              
+              {searchOn && (
+                <div style={{ marginTop: 14 }}>
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search tags, topic, quote, prompt…"
+                    style={{ width: "100%", border: "1px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "10px 12px", fontSize: 14, outline: "none", background: "rgba(255,255,255,0.96)", boxSizing: "border-box" }}
+                  />
+                </div>
+              )}
+              
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontWeight: 900, fontSize: 13, opacity: 0.8, padding: "0 2px 8px" }}>Today's mix</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {filteredTweets.slice(0, 6).map((tw) => (
+                    <div key={`gen_${tw.id}`} style={{ border: "1px solid rgba(0,0,0,0.10)", background: "rgba(255,255,255,0.94)", borderRadius: 16, padding: 12, boxSizing: "border-box" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, opacity: 0.65, marginBottom: 6 }}>
+                        <span>{formatDate(tw.date)}</span>
+                        <span style={{ fontFamily: MONO, letterSpacing: 0.35 }}>{tw.kind} · {tw.topic}</span>
+                      </div>
+                      <div style={{ fontSize: 14.5, lineHeight: 1.5, marginBottom: 10 }}>{tw.text}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {tw.tags.map((t) => <TagPill key={`gen_${tw.id}_${t.id}`} label={t.label} topColor={t.top} />)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Middle column */}
+          <aside style={{ width: "100%", marginTop: 0, paddingTop: 0, alignSelf: "flex-start" }}>
+            <div style={{ width: "100%", border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 4px 10px", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 12 }}>
+                <div style={{ fontWeight: 900, fontSize: 17, letterSpacing: -0.2 }}>Sample Unspool</div>
+              </div>
+              
+              <div style={{ border: "1px solid rgba(0,0,0,0.10)", background: "rgba(255,255,255,0.94)", borderRadius: 18, padding: 12, marginBottom: 14, boxSizing: "border-box" }}>
+                <div style={{ fontWeight: 900, fontSize: 13, opacity: 0.75, marginBottom: 10 }}>
+                  Archived tweets {archivedTweets.length > 0 && `(${archivedTweets.length})`}
+                </div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {(() => {
+                    console.log('Rendering archived tweets, count:', archivedTweets.length);
+                    console.log('Archived tweets data:', archivedTweets);
+                    return archivedTweets.length > 0 ? archivedTweets.slice(0, 6).map((tw) => {
+                      // Find media for this tweet
+                      const tweetMedia = mediaItems.filter(m => m.id.startsWith(tw.id));
+                      
+                      return (
+                        <div key={tw.id} style={{ border: "1px solid rgba(0,0,0,0.10)", background: "rgba(255,255,255,0.96)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}>
+                          <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 6 }}>{formatDate(tw.date)}</div>
+                          <div style={{ fontSize: 13.5, lineHeight: 1.45, marginBottom: 10, color: "rgba(0,0,0,0.78)" }}>{tw.text}</div>
+                          
+                          {/* Display media if available */}
+                          {tweetMedia.length > 0 && (
+                            <div style={{ 
+                              marginBottom: 10,
+                              display: "grid",
+                              gridTemplateColumns: tweetMedia.length === 1 ? "1fr" : "repeat(2, 1fr)",
+                              gap: 6,
+                            }}>
+                              {tweetMedia.slice(0, 2).map((media) => (
+                                <div key={media.id} style={{
+                                  borderRadius: 10,
+                                  backgroundColor: 'rgba(210,212,216,0.4)',
+                                  border: "1px solid rgba(0,0,0,0.10)",
+                                  aspectRatio: "16/10",
+                                  minHeight: 80,
+                                  overflow: "hidden",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}>
+                                  <img 
+                                    src={media.url} 
+                                    alt="Tweet media"
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      display: "block",
+                                    }}
+                                    onError={(e) => {
+                                      console.log('Tweet image failed:', media.url);
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {tw.tags.map((t) => <TagPill key={`${tw.id}_${t.id}`} label={t.label} topColor={t.top} />)}
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div style={{ fontSize: 13, opacity: 0.5, fontStyle: "italic", padding: "12px 0" }}>
+                        Click "Demo" to load sample archived tweets
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              <div style={{ border: "1px solid rgba(0,0,0,0.10)", background: "rgba(255,255,255,0.94)", borderRadius: 18, padding: 12, boxSizing: "border-box" }}>
+                <div style={{ fontWeight: 900, fontSize: 13, opacity: 0.75, marginBottom: 10 }}>Portfolio highlights</div>
+                
+                {archivedTweets.length > 0 ? (
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {/* Group tweets by topic/theme */}
+                    {(() => {
+                      // Find tweets by hashtag themes
+                      const makerTweets = archivedTweets.filter(tw => 
+                        tw.text.toLowerCase().includes('cmk') || 
+                        tw.text.toLowerCase().includes('pbl') ||
+                        tw.text.toLowerCase().includes('learning')
+                      ).slice(0, 1);
+                      
+                      const designTweets = archivedTweets.filter(tw => 
+                        tw.text.toLowerCase().includes('design') || 
+                        tw.text.toLowerCase().includes('lighting') ||
+                        tw.text.toLowerCase().includes('spark lab')
+                      ).slice(0, 1);
+                      
+                      const eduTweets = archivedTweets.filter(tw => 
+                        tw.text.toLowerCase().includes('first grader') || 
+                        tw.text.toLowerCase().includes('class iv') ||
+                        tw.text.toLowerCase().includes('bird')
+                      ).slice(0, 1);
+                      
+                      const highlights = [...makerTweets, ...designTweets, ...eduTweets].slice(0, 3);
+                      
+                      return highlights.length > 0 ? highlights.map((tw) => {
+                        const tweetMedia = mediaItems.filter(m => m.id.startsWith(tw.id));
+                        
+                        return (
+                          <div key={tw.id} style={{ 
+                            border: "1px solid rgba(0,0,0,0.10)", 
+                            background: "rgba(255,255,255,0.98)", 
+                            borderRadius: 12, 
+                            padding: 10,
+                            boxSizing: "border-box",
+                          }}>
+                            {/* Media thumbnail if available */}
+                            {tweetMedia.length > 0 && (
+                              <div style={{
+                                borderRadius: 8,
+                                backgroundColor: 'rgba(210,212,216,0.4)',
+                                border: "1px solid rgba(0,0,0,0.08)",
+                                aspectRatio: "16/9",
+                                marginBottom: 8,
+                                overflow: "hidden",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}>
+                                <img 
+                                  src={tweetMedia[0].url} 
+                                  alt="Portfolio highlight"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    display: "block",
+                                  }}
+                                  onError={(e) => {
+                                    console.log('Portfolio image failed:', tweetMedia[0].url);
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            
+                            <div style={{ fontWeight: 850, fontSize: 12, marginBottom: 4, letterSpacing: -0.1 }}>
+                              {tw.text.substring(0, 60)}...
+                            </div>
+                            <div style={{ fontSize: 11, opacity: 0.65, lineHeight: 1.35, marginBottom: 6 }}>
+                              {formatDate(tw.date)}
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {tw.tags.map((t) => <TagPill key={`port_${tw.id}_${t.id}`} label={t.label} topColor={t.top} />)}
+                            </div>
+                          </div>
+                        );
+                      }) : (
+                        <div style={{ fontSize: 12, opacity: 0.5, fontStyle: "italic", padding: "8px 0" }}>
+                          Portfolio highlights will appear here
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, opacity: 0.5, fontStyle: "italic", padding: "8px 0" }}>
+                    Load your archive to see portfolio highlights
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
+          
+          {/* Right column */}
+          <aside style={{ width: "100%", marginTop: 0, paddingTop: 0, alignSelf: "flex-start" }}>
+            <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box", marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 2px 12px", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 14, gap: 12 }}>
+                <div style={{ fontWeight: 900, fontSize: 15.5, letterSpacing: -0.2 }}>Archive Manager</div>
+                <div style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: 0.2, opacity: 0.65 }}>demo + export</div>
+              </div>
+              
+              <div style={{ display: "flex", gap: 18, paddingTop: 2, alignItems: "flex-start" }}>
+                <ControlScreen title="Demo" desc="Load sample data">
+                  <ActionKnob color={CMYK.c} ariaLabel="Load demo data" onClick={() => doClick(() => loadDemoData())} />
+                </ControlScreen>
+                
+                <ControlScreen title="Export" desc="Download portfolio">
+                  <ActionKnob color={CMYK.m} ariaLabel="Download portfolio" onClick={() => doClick(() => downloadPortfolio())} />
+                </ControlScreen>
+              </div>
+              
+              {archiveStatus && (
+                <div style={{ marginTop: 12, fontFamily: MONO, fontSize: 11.5, opacity: 0.75 }}>{archiveStatus}</div>
+              )}
+            </div>
+            
+            <div style={{ border: "1px solid rgba(0,0,0,0.12)", background: "rgba(255,255,255,0.90)", borderRadius: 22, padding: 16, boxSizing: "border-box" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 4px 10px", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 12 }}>
+                <div style={{ fontWeight: 900, fontSize: 17, letterSpacing: -0.2 }}>Archived images + media</div>
+                
+                {/* Shuffle knob - same style as Tweet Generator */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.7 }}>Shuffle</div>
+                  <ActionKnob 
+                    color={CMYK.y} 
+                    ariaLabel="Shuffle media" 
+                    onClick={() => doClick(() => {
+                      const shuffled = [...mediaItems].sort(() => Math.random() - 0.5);
+                      setMediaItems(shuffled);
+                    })} 
+                  />
+                </div>
+              </div>
+              
+              <div style={{ border: "1px solid rgba(0,0,0,0.10)", background: "rgba(255,255,255,0.94)", borderRadius: 18, padding: 12, boxSizing: "border-box" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                  {(mediaItems.length ? mediaItems.slice(0, 6) : new Array(6).fill(0).map((_, i) => ({
+                    id: `tile_${i}`,
+                    kind: i % 3 === 0 ? "video" : i % 3 === 1 ? "image" : "gif",
+                    title: i % 3 === 0 ? "Archived video" : i % 3 === 1 ? "Archived image" : "Archived gif",
+                    date: new Date(),
+                  }))).map((it, i) => (
+                    <div key={it.id || `tile_${i}`} style={{ 
+                      border: "1px solid rgba(0,0,0,0.10)", 
+                      background: "rgba(255,255,255,0.96)", 
+                      borderRadius: 14, 
+                      padding: 10, 
+                      boxSizing: "border-box",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}>
+                      {/* Image area - same style as archived tweets */}
+                      <div style={{
+                        borderRadius: 10,
+                        backgroundColor: 'rgba(210,212,216,0.4)',
+                        border: "1px solid rgba(0,0,0,0.10)",
+                        aspectRatio: "16/10",
+                        minHeight: 70,
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        cursor: "pointer",
+                      }}>
+                        {it.url && (
+                          <img 
+                            src={it.url} 
+                            alt={it.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                            onError={(e) => {
+                              console.log('Image failed to load:', it.url);
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        {/* Minimal circular view button overlay */}
+                        <div style={{
+                          position: "absolute",
+                          bottom: 6,
+                          right: 6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "rgba(255,255,255,0.92)",
+                          border: "1px solid rgba(0,0,0,0.12)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          opacity: 0.75,
+                          transition: "opacity 0.2s",
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = "0.75"}
+                        >
+                          <div style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: "#111111",
+                          }} />
+                        </div>
+                      </div>
+                      
+                      {/* Info */}
+                      <div style={{ fontSize: 10, opacity: 0.6, marginBottom: 0, fontWeight: 400 }}>
+                        {mediaItems.length ? formatDate(it.date) : "(placeholder)"}
+                      </div>
+                      <div style={{ fontWeight: 400, fontSize: 9, opacity: 0.78, lineHeight: 1.3 }}>
+                        {it.title}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </aside>
+        </main>
+        
+        <footer style={{ width: "100%", padding: "18px 0 24px", fontSize: 12, opacity: 0.75 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(0,0,0,0.10)", paddingTop: 12 }}>
+            <div>unspool.work © 2026</div>
+            <div style={{ fontFamily: MONO, letterSpacing: 0.4 }} />
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}

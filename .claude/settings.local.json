@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(npx surge:*)",
+      "Bash(npm install:*)",
+      "Bash(sudo rm:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(zip:*)"
+    ]
+  }
+}
