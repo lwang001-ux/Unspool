@@ -687,7 +687,7 @@ function Knob({ color, on, onToggle, ariaLabel }) {
   );
 }
 
-function ActionKnob({ color, onClick, ariaLabel }) {
+function ActionKnob({ color, onClick, ariaLabel, active = false }) {
   const [pressed, setPressed] = useState(false);
 
   function handleClick() {
@@ -723,7 +723,7 @@ function ActionKnob({ color, onClick, ariaLabel }) {
           justifyContent: "center",
           position: "relative",
           boxSizing: "border-box",
-          transform: `rotate(${pressed ? 90 : 0}deg)`,
+          transform: `rotate(${pressed ? 90 : (active ? 90 : 0)}deg)`,
           transition: "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}>
           <div style={{ width: 16, height: 16, borderRadius: 999, background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
@@ -2605,7 +2605,7 @@ ${readme}
                     onClick={() => document.getElementById('data-file-input')?.click()}
                   >
                     <ControlScreen title={getPlatformFileInfo().label} desc={uploadedTweets ? "✓ Loaded" : `Select ${getPlatformFileInfo().file}`}>
-                      <ActionKnob color={getPlatformColor()} ariaLabel={`Select ${getPlatformFileInfo().file}`} />
+                      <ActionKnob color={getPlatformColor()} ariaLabel={`Select ${getPlatformFileInfo().file}`} active={!!uploadedTweets} />
                     </ControlScreen>
                   </div>
 
@@ -2615,7 +2615,7 @@ ${readme}
                     onClick={() => document.getElementById('media-folder-input')?.click()}
                   >
                     <ControlScreen title="Media" desc={uploadedMedia.size > 0 ? `✓ ${uploadedMedia.size} files` : "Select folder"}>
-                      <ActionKnob color={getPlatformColor()} ariaLabel="Select media folder" />
+                      <ActionKnob color={getPlatformColor()} ariaLabel="Select media folder" active={uploadedMedia.size > 0} />
                     </ControlScreen>
                   </div>
 
@@ -2632,6 +2632,7 @@ ${readme}
                       <ActionKnob
                         color={uploadedTweets && uploadedMedia.size > 0 ? getPlatformColor() : "rgba(0,0,0,0.3)"}
                         ariaLabel="Generate portfolio"
+                        active={uploadedTweets && uploadedMedia.size > 0}
                       />
                     </ControlScreen>
                   </div>
