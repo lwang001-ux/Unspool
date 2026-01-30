@@ -628,21 +628,21 @@ function ControlScreen({ title, desc, children }) {
       borderRadius: 10,
       border: "1px solid rgba(0,0,0,0.16)",
       background: "rgba(245,246,248,0.92)",
-      padding: "8px 10px",
-      minWidth: 140,
-      maxWidth: 140,
-      minHeight: 82,
+      padding: "10px 12px 12px 12px",
+      minWidth: 150,
+      maxWidth: 150,
+      minHeight: 100,
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
       flex: "0 0 auto",
       boxSizing: "border-box",
     }}>
-      <div style={{ marginBottom: 6 }}>
+      <div>
         <div style={{ fontSize: 11, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9 }}>{title}</div>
-        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 3, lineHeight: 1.2 }}>{desc}</div>
+        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 3, lineHeight: 1.25 }}>{desc}</div>
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", paddingBottom: 2 }}>{children}</div>
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginTop: 8 }}>{children}</div>
     </div>
   );
 }
