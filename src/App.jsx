@@ -631,7 +631,7 @@ function ControlScreen({ title, desc, children }) {
       padding: "10px 12px 12px 12px",
       minWidth: 150,
       maxWidth: 150,
-      minHeight: 100,
+      height: 80,
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
@@ -639,10 +639,10 @@ function ControlScreen({ title, desc, children }) {
       boxSizing: "border-box",
     }}>
       <div>
-        <div style={{ fontSize: 11, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9 }}>{title}</div>
-        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 3, lineHeight: 1.25 }}>{desc}</div>
+        <div style={{ fontSize: 11, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
+        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{desc}</div>
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginTop: 8 }}>{children}</div>
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }}>{children}</div>
     </div>
   );
 }
