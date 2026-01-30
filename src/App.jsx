@@ -622,26 +622,23 @@ function TagPill({ label, topColor }) {
   );
 }
 
-function ControlScreen({ title, desc, children }) {
+function ControlScreen({ title, children }) {
   return (
     <div style={{
       borderRadius: 10,
       border: "1px solid rgba(0,0,0,0.16)",
       background: "rgba(245,246,248,0.92)",
       padding: "10px 12px 12px 12px",
-      minWidth: 150,
-      maxWidth: 150,
-      height: 80,
+      minWidth: 130,
+      maxWidth: 130,
+      height: 66,
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
       flex: "0 0 auto",
       boxSizing: "border-box",
     }}>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
-        <div style={{ fontFamily: MONO, fontSize: 9.2, letterSpacing: 0.12, opacity: 0.62, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{desc}</div>
-      </div>
+      <div style={{ fontSize: 11, fontWeight: 950, letterSpacing: 0.12, opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
       <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }}>{children}</div>
     </div>
   );
@@ -2403,7 +2400,7 @@ ${readme}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Choose your platform</div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <ControlScreen title="Twitter" desc="tweets.js">
+                  <ControlScreen title="Twitter">
                     <ActionKnob
                       color={CMYK.c}
                       ariaLabel="Select Twitter"
@@ -2411,7 +2408,7 @@ ${readme}
                     />
                   </ControlScreen>
 
-                  <ControlScreen title="Instagram" desc="posts_1.json">
+                  <ControlScreen title="Instagram">
                     <ActionKnob
                       color={CMYK.m}
                       ariaLabel="Select Instagram"
@@ -2419,7 +2416,7 @@ ${readme}
                     />
                   </ControlScreen>
 
-                  <ControlScreen title="Facebook" desc="your_posts_1.json">
+                  <ControlScreen title="Facebook">
                     <ActionKnob
                       color={CMYK.y}
                       ariaLabel="Select Facebook"
@@ -2427,7 +2424,7 @@ ${readme}
                     />
                   </ControlScreen>
 
-                  <ControlScreen title="Flickr" desc="photo_*.json">
+                  <ControlScreen title="Flickr">
                     <ActionKnob
                       color={CMYK.k}
                       ariaLabel="Select Flickr"
@@ -2604,7 +2601,7 @@ ${readme}
                     style={{ cursor: "pointer" }}
                     onClick={() => document.getElementById('data-file-input')?.click()}
                   >
-                    <ControlScreen title={getPlatformFileInfo().label} desc={uploadedTweets ? "✓ Loaded" : `Select ${getPlatformFileInfo().file}`}>
+                    <ControlScreen title={uploadedTweets ? "✓ Data" : getPlatformFileInfo().label}>
                       <ActionKnob color={getPlatformColor()} ariaLabel={`Select ${getPlatformFileInfo().file}`} active={!!uploadedTweets} />
                     </ControlScreen>
                   </div>
@@ -2614,7 +2611,7 @@ ${readme}
                     style={{ cursor: "pointer" }}
                     onClick={() => document.getElementById('media-folder-input')?.click()}
                   >
-                    <ControlScreen title="Media" desc={uploadedMedia.size > 0 ? `✓ ${uploadedMedia.size} files` : "Select folder"}>
+                    <ControlScreen title={uploadedMedia.size > 0 ? "✓ Media" : "Media"}>
                       <ActionKnob color={getPlatformColor()} ariaLabel="Select media folder" active={uploadedMedia.size > 0} />
                     </ControlScreen>
                   </div>
@@ -2628,7 +2625,7 @@ ${readme}
                       }
                     }}
                   >
-                    <ControlScreen title="Generate" desc={uploadedTweets && uploadedMedia.size > 0 ? "Ready!" : "Upload first"}>
+                    <ControlScreen title="Generate">
                       <ActionKnob
                         color={uploadedTweets && uploadedMedia.size > 0 ? getPlatformColor() : "rgba(0,0,0,0.3)"}
                         ariaLabel="Generate portfolio"
@@ -2638,7 +2635,7 @@ ${readme}
                   </div>
 
                   {/* Counter - ControlScreen style */}
-                  <ControlScreen title="Counter" desc="portfolios created">
+                  <ControlScreen title="Counter">
                     <div style={{ display: "flex", gap: 2 }}>
                       {String(1247).split('').map((digit, i) => (
                         <div key={i} style={{
@@ -2684,7 +2681,7 @@ ${readme}
               </div>
               
               <div style={{ display: "flex", gap: 18, alignItems: "flex-start", overflowX: "auto", paddingBottom: 2 }}>
-                <ControlScreen title="Generate" desc="Add one now">
+                <ControlScreen title="Generate">
                   <ActionKnob color={CMYK.c} ariaLabel="Generate tweet" onClick={() => doClick(() => {
                     const seed = hash32(`${today}::manual::${Date.now()}`);
                     const rng = mulberry32(seed);
@@ -2705,19 +2702,19 @@ ${readme}
                   })} />
                 </ControlScreen>
                 
-                <ControlScreen title="Auto" desc={autoOn ? "Drip on" : "Stopped"}>
+                <ControlScreen title="Auto">
                   <Knob color={CMYK.m} on={autoOn} onToggle={() => doClick(() => setAutoOn((v) => !v))} ariaLabel="Toggle auto-drip" />
                 </ControlScreen>
-                
-                <ControlScreen title="Search" desc={searchOn ? "Active" : "Off"}>
+
+                <ControlScreen title="Search">
                   <Knob color={CMYK.y} on={searchOn} onToggle={() => doClick(() => setSearchOn((s) => !s))} ariaLabel="Toggle search" />
                 </ControlScreen>
-                
-                <ControlScreen title="Order" desc={sortNewest ? "Newest first" : "Oldest first"}>
+
+                <ControlScreen title="Order">
                   <Knob color={CMYK.k} on={sortNewest} onToggle={() => doClick(() => setSortNewest((v) => !v))} ariaLabel="Toggle order" />
                 </ControlScreen>
-                
-                <ControlScreen title="Sound" desc={soundOn ? "Clicks on" : "Silent"}>
+
+                <ControlScreen title="Sound">
                   <Knob color={CMYK.c} on={soundOn} onToggle={() => doClick(() => setSoundOn((s) => !s))} ariaLabel="Toggle sound" />
                 </ControlScreen>
               </div>
@@ -2933,11 +2930,11 @@ ${readme}
               </div>
 
               <div style={{ display: "flex", gap: 10, justifyContent: "space-evenly", alignItems: "flex-start" }}>
-                <ControlScreen title="Demo" desc="Load sample data">
+                <ControlScreen title="Demo">
                   <ActionKnob color={CMYK.c} ariaLabel="Load demo data" onClick={() => doClick(() => loadDemoData())} />
                 </ControlScreen>
 
-                <ControlScreen title="Export" desc="Download portfolio">
+                <ControlScreen title="Export">
                   <ActionKnob color={CMYK.m} ariaLabel="Download portfolio" onClick={() => doClick(() => setShowExportMenu(true))} />
                 </ControlScreen>
               </div>
